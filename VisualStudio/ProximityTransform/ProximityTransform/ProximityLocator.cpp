@@ -10,6 +10,8 @@
 
 #include "ProximityLocator.h"
 
+MTypeId ProximityLocator::id{ 0x0012d3005 };
+
 void * ProximityLocator::creator()
 {
 	return new ProximityLocator;

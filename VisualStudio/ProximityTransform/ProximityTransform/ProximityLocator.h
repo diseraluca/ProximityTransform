@@ -21,4 +21,7 @@ public:
 	static void* creator();
 	static MStatus initialize();
 	virtual MStatus compute(const MPlug& plug, MDataBlock& data);
+
+public:
+	static MTypeId id;
 };

@@ -22,6 +22,7 @@
     <ClInclude Include="ProximityLocator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="pluginMain.cpp" />
     <ClCompile Include="ProximityLocator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
