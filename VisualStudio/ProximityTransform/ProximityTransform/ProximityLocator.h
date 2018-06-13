@@ -33,8 +33,8 @@ public:
 	~ProximityLocator();
 
 private:
-	void onNodeAdded(MObject& node, void* clientData);
-	MObject & transformFromShape(const MObject& shapeNode);
+	static void onNodeAdded(MObject& node, void* clientData);
+	static MObject & transformFromShape(const MObject& shapeNode);
 
 public:
 	static MTypeId id;

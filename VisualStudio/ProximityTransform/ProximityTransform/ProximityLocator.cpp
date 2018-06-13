@@ -50,13 +50,39 @@ MStatus ProximityLocator::initialize()
 
 void ProximityLocator::postConstructor()
 {
+	MFnDagNode proximityLocatorNodeFn{ thisMObject() };
+	proximityLocatorNodeFn.setName("ProximityLocator#");
 
+	nodeAddedCbId = MDGMessage::addNodeAddedCallback(ProximityLocator::onNodeAdded, "ProximityLocator");
+	if (nodeAddedCbId == NULL) {
+		MGlobal::displayError("Couldn't create the nodeAdded callback");
+	}
+}
 
+MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
+{
+	return MStatus();
+}
+
+ProximityLocator::~ProximityLocator()
+{
+	CHECK_MSTATUS(MDGMessage::removeCallback(nodeAddedCbId));
+}
+
+// ProximityLocator::onNodeAdded
+//
+// This function gets called by a callback when a node of ProximityLocator
+// type is created.
+// When called onNodeAdded connects the "isVisible" output attribute
+// of the ProximityLocator instance to the "visibility" attribute of
+// the corresponding transform.
+void ProximityLocator::onNodeAdded(MObject & node, void * clientData)
+{
 	MStatus status{};
-	MFnDagNode transformFn{ transformFromShape(thisMObject()) };
+	MFnDagNode transformFn{ ProximityLocator::transformFromShape(node) };
 
 
-	MPlug proximityLocatorIsVisiblePlug{ thisMObject(), isVisible };
+	MPlug proximityLocatorIsVisiblePlug{ node, isVisible };
 	if (proximityLocatorIsVisiblePlug.isNull()) {
 		MGlobal::displayError("Couldn't find a plug to isVisible");
 		return;
@@ -68,19 +94,6 @@ void ProximityLocator::postConstructor()
 	MDagModifier dagModifier{};
 	dagModifier.connect(proximityLocatorIsVisiblePlug, transformVisibilityPlug);
 	dagModifier.doIt();
-}
-
-MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
-{
-	return MStatus();
-}
-
-ProximityLocator::~ProximityLocator()
-{
-}
-
-void ProximityLocator::onNodeAdded(MObject & node, void * clientData)
-{
 }
 
 MObject & ProximityLocator::transformFromShape(const MObject & shapeNode)
