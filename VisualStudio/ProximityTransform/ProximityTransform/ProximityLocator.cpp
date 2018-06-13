@@ -61,7 +61,23 @@ void ProximityLocator::postConstructor()
 
 MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 {
-	return MStatus();
+	// As of now the compute method is a proxy that
+	// inverts isVisible and nothing more.
+	//TODO-DO Add the real computation
+
+	if (plug != isVisible || plug != dummyOutput) {
+		return MStatus::kUnknownParameter;
+	}
+
+	bool isVisbleValue{ data.outputValue(isVisible).asBool() };
+
+	data.outputValue(dummyOutput).setBool(!isVisbleValue);
+	data.outputValue(isVisible).setBool(!isVisbleValue);
+	
+	data.outputValue(dummyOutput).setClean();
+	data.outputValue(isVisible).setClean();
+
+	return MStatus::kSuccess;
 }
 
 ProximityLocator::~ProximityLocator()
