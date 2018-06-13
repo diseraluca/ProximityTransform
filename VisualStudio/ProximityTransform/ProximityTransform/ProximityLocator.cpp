@@ -19,6 +19,9 @@
 
 MTypeId ProximityLocator::id{ 0x0012d3005 };
 
+MString ProximityLocator::drawDbClassification{ "drawdb/geometry/ProximityLocator" };
+MString ProximityLocator::drawRegistrantId{ "ProximityLocatorPlugin" };
+
 MObject ProximityLocator::dummyOutput;
 MObject ProximityLocator::isVisible;
 
@@ -65,14 +68,14 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 	// inverts isVisible and nothing more.
 	//TODO-DO Add the real computation
 
-	if (plug != isVisible || plug != dummyOutput) {
+	if (plug != isVisible && plug != dummyOutput) {
 		return MStatus::kUnknownParameter;
 	}
 
 	bool isVisbleValue{ data.outputValue(isVisible).asBool() };
 
 	data.outputValue(dummyOutput).setBool(!isVisbleValue);
-	data.outputValue(isVisible).setBool(!isVisbleValue);
+	data.outputValue(isVisible).setBool(isVisbleValue);
 	
 	data.outputValue(dummyOutput).setClean();
 	data.outputValue(isVisible).setClean();
@@ -82,7 +85,9 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 
 ProximityLocator::~ProximityLocator()
 {
-	CHECK_MSTATUS(MDGMessage::removeCallback(nodeAddedCbId));
+	if (nodeAddedCbId != NULL) {
+		CHECK_MSTATUS(MDGMessage::removeCallback(nodeAddedCbId));
+	}
 }
 
 // ProximityLocator::onNodeAdded

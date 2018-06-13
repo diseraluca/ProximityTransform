@@ -39,6 +39,9 @@ private:
 public:
 	static MTypeId id;
 
+	static  MString     drawDbClassification;
+	static  MString     drawRegistrantId;
+
 	static MObject dummyOutput;
 	static MObject isVisible;
 

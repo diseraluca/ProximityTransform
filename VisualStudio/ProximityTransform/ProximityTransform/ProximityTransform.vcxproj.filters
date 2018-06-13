@@ -18,12 +18,18 @@
     <ClInclude Include="ProximityLocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProximityLocatorDrawOverride.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProximityLocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pluginMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProximityLocatorDrawOverride.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
