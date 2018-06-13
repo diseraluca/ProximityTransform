@@ -21,6 +21,8 @@ MStatus initializePlugin(MObject obj) {
 
 	status = plugin.registerNode("ProximityLocator", ProximityLocator::id, ProximityLocator::creator, ProximityLocator::initialize, MPxNode::kLocatorNode);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	return MStatus::kSuccess;
 }
 
 MStatus uninitializePlugin(MObject obj) {
@@ -29,4 +31,6 @@ MStatus uninitializePlugin(MObject obj) {
 
 	status = plugin.deregisterNode(ProximityLocator::id);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	return MStatus::kSuccess;
 }
