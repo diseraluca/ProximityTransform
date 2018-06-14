@@ -10,6 +10,7 @@
 
 #include "ProximityLocator.h"
 
+#include <qtgui/qcursor>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnDagNode.h>
 #include <maya/MDagPath.h>
@@ -72,7 +73,11 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 	if (plug != isVisible ) {
 		return MStatus::kUnknownParameter;
 	}
-	
+
+	// We use Qt to get the cursor position because maya
+	// can't give it to us if we are not in a MContext
+	QPoint cursorPosition{ QCursor::pos() };
+
 	bool dummyValue{ data.inputValue(dummyInput).asBool() };
 	bool isVisbleValue{ data.outputValue(isVisible).asBool() };
 
