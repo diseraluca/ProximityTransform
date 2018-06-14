@@ -74,8 +74,14 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 		return MStatus::kUnknownParameter;
 	}
 
-	// We use Qt to get the cursor position because maya
-	// can't give it to us if we are not in a MContext
+	MStatus status{};
+
+	M3dView activeView{ M3dView::active3dView(&status) };
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	// We use Qt to get the cursor position ( and map it to
+	// the active viewport ) because maya can't give it to 
+	// us if we are not in an MContext
 	QPoint cursorPosition{ QCursor::pos() };
 
 	bool dummyValue{ data.inputValue(dummyInput).asBool() };
