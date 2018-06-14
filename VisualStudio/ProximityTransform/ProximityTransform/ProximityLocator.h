@@ -42,7 +42,7 @@ public:
 	static  MString     drawDbClassification;
 	static  MString     drawRegistrantId;
 
-	static MObject dummyOutput;
+	static MObject dummyInput;
 	static MObject isVisible;
 
 private:

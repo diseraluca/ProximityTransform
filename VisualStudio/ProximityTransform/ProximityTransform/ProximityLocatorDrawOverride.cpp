@@ -74,8 +74,9 @@ void ProximityLocatorDrawOverride::onDrawTimerCallback(float elapsedTime, float 
 {
 	ProximityLocatorDrawOverride* proximityLocatorDrawOverride = static_cast<ProximityLocatorDrawOverride*>(clientData);
 	if (proximityLocatorDrawOverride && proximityLocatorDrawOverride->proximityLocator) {
-		MPlug proximityLocatorDummyOutputPlug{ proximityLocatorDrawOverride->proximityLocator->thisMObject(), ProximityLocator::dummyOutput };
-		proximityLocatorDummyOutputPlug.asBool();
+		MPlug proximityLocatorDummyInputPlug{ proximityLocatorDrawOverride->proximityLocator->thisMObject(), ProximityLocator::dummyInput };
+		bool dummyInputValue = proximityLocatorDummyInputPlug.asBool();
+		proximityLocatorDummyInputPlug.setBool(!dummyInputValue);
 
 		MHWRender::MRenderer::setGeometryDrawDirty(proximityLocatorDrawOverride->proximityLocator->thisMObject());
 	}

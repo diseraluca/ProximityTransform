@@ -22,7 +22,7 @@ MTypeId ProximityLocator::id{ 0x0012d3005 };
 MString ProximityLocator::drawDbClassification{ "drawdb/geometry/ProximityLocator" };
 MString ProximityLocator::drawRegistrantId{ "ProximityLocatorPlugin" };
 
-MObject ProximityLocator::dummyOutput;
+MObject ProximityLocator::dummyInput;
 MObject ProximityLocator::isVisible;
 
 void * ProximityLocator::creator()
@@ -36,17 +36,18 @@ MStatus ProximityLocator::initialize()
 
 	MFnNumericAttribute nAttr;
 
-	dummyOutput = nAttr.create("dummyOutput", "dop", MFnNumericData::kBoolean, true, &status);
+	dummyInput = nAttr.create("dummyInput", "dip", MFnNumericData::kBoolean, true, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
-	CHECK_MSTATUS(nAttr.setStorable(false));
 	CHECK_MSTATUS(nAttr.setWritable(false));
-	CHECK_MSTATUS(addAttribute(dummyOutput));
+	CHECK_MSTATUS(addAttribute(dummyInput));
 	
 	isVisible = nAttr.create("isVisible", "isv", MFnNumericData::kBoolean, true, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 	CHECK_MSTATUS(nAttr.setStorable(false));
 	CHECK_MSTATUS(nAttr.setWritable(false));
 	CHECK_MSTATUS(addAttribute(isVisible));
+
+	attributeAffects(dummyInput, isVisible);
 
 	return MStatus::kSuccess;
 }
@@ -68,16 +69,14 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 	// inverts isVisible and nothing more.
 	//TODO-DO Add the real computation
 
-	if (plug != isVisible && plug != dummyOutput) {
+	if (plug != isVisible ) {
 		return MStatus::kUnknownParameter;
 	}
-
+	
+	bool dummyValue{ data.inputValue(dummyInput).asBool() };
 	bool isVisbleValue{ data.outputValue(isVisible).asBool() };
 
-	data.outputValue(dummyOutput).setBool(!isVisbleValue);
-	data.outputValue(isVisible).setBool(isVisbleValue);
-	
-	data.outputValue(dummyOutput).setClean();
+	data.outputValue(isVisible).setBool(!isVisbleValue);
 	data.outputValue(isVisible).setClean();
 
 	return MStatus::kSuccess;
