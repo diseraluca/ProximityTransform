@@ -10,13 +10,20 @@
 
 #include "ProximityLocator.h"
 
+#include <Windows.h>
+#include <qtcore/qpoint>
+#include <qtcore/qmetatype.h>
+#include <qtcore/qbytearray.h>
 #include <qtgui/qcursor>
+#include <qtwidgets/qwidget.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnDagNode.h>
 #include <maya/MDagPath.h>
 #include <maya/MGlobal.h>
 #include <maya/MDagModifier.h>
 #include <maya/MDGMessage.h>
+#include <maya/MPoint.h>
+#include <maya/MMatrix.h>
 
 MTypeId ProximityLocator::id{ 0x0012d3005 };
 
@@ -74,20 +81,25 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 		return MStatus::kUnknownParameter;
 	}
 
-	MStatus status{};
+	// We use Qt to get the cursor position because maya  
+	// can't give it to us if we are not in an MContext
+	// Right now the tool works with global coordinates
+	// ( e.g the mouse cursor show control in range even
+	// if it is outside the viewport )
+	QPoint QcursorPosition{ QCursor::pos() };
+	MPoint cursorPosition{ double(QcursorPosition.x() / 1000), double(QcursorPosition.y() / 1000) };
 
-	M3dView activeView{ M3dView::active3dView(&status) };
-	CHECK_MSTATUS_AND_RETURN_IT(status);
+	short proximityLocatorCoordinates[2];
+	CHECK_MSTATUS(dagObjectToViewCoordinates(thisMObject(), proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
+	MPoint proximityLocatorViewCoordinates{double(proximityLocatorCoordinates[0]/1000), double(proximityLocatorCoordinates[1]/1000)};
 
-	// We use Qt to get the cursor position ( and map it to
-	// the active viewport ) because maya can't give it to 
-	// us if we are not in an MContext
-	QPoint cursorPosition{ QCursor::pos() };
+	MVector cursorLocatorVector{ cursorPosition - proximityLocatorViewCoordinates };
+	bool result = (cursorLocatorVector.length() <= 0.1);
 
+	// We access dummyInput to clean the dg 
 	bool dummyValue{ data.inputValue(dummyInput).asBool() };
-	bool isVisbleValue{ data.outputValue(isVisible).asBool() };
 
-	data.outputValue(isVisible).setBool(!isVisbleValue);
+	data.outputValue(isVisible).setBool(result);
 	data.outputValue(isVisible).setClean();
 
 	return MStatus::kSuccess;
@@ -127,7 +139,7 @@ void ProximityLocator::onNodeAdded(MObject & node, void * clientData)
 	dagModifier.doIt();
 }
 
-MObject & ProximityLocator::transformFromShape(const MObject & shapeNode)
+MObject  ProximityLocator::transformFromShape(const MObject & shapeNode)
 {
 	MStatus status{};
 
@@ -139,4 +151,23 @@ MObject & ProximityLocator::transformFromShape(const MObject & shapeNode)
 	CHECK_MSTATUS(status);
 
 	return transform;
+}
+
+MStatus ProximityLocator::dagObjectToViewCoordinates(const MObject & dagNode, short & x_pos, short & y_pos) const
+{
+	MStatus status{};
+
+	// Find the world space position of the node
+	MFnDagNode dagNodeFn{ dagNode, &status };
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	MTransformationMatrix dagNodeMatrix{ dagNodeFn.transformationMatrix(&status) };
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	MPoint dagNodePosition{ dagNodeMatrix.getTranslation(MSpace::kWorld, &status) };
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	M3dView activeView{ M3dView::active3dView() };
+	activeView.worldToView(dagNodePosition, x_pos, y_pos, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+
+	return MStatus::kSuccess;
 }

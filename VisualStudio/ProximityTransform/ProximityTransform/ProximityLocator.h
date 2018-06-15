@@ -20,8 +20,10 @@
 
 #pragma once
 
+#include <qtcore/qpoint.h>
 #include <maya/MPxLocatorNode.h>
 #include <maya/MCallbackIdArray.h>
+#include <maya/MPoint.h>
 
 class ProximityLocator : public MPxLocatorNode {
 public:
@@ -34,7 +36,9 @@ public:
 
 private:
 	static void onNodeAdded(MObject& node, void* clientData);
-	static MObject & transformFromShape(const MObject& shapeNode);
+	static MObject  transformFromShape(const MObject& shapeNode);
+
+	MStatus dagObjectToViewCoordinates(const MObject& dagNode, short &x_pos, short&y_pos) const;
 
 public:
 	static MTypeId id;

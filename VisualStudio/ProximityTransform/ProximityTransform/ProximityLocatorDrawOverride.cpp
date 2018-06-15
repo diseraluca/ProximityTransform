@@ -18,7 +18,7 @@ ProximityLocatorDrawOverride::ProximityLocatorDrawOverride(const MObject & obj)
 {
 	MStatus status{};
 
-	drawTimerCbId = MTimerMessage::addTimerCallback(10.0f, ProximityLocatorDrawOverride::onDrawTimerCallback, this, &status);
+	drawTimerCbId = MTimerMessage::addTimerCallback(0.5f, ProximityLocatorDrawOverride::onDrawTimerCallback, this, &status);
 	CHECK_MSTATUS(status);
 
 	MFnDependencyNode proximityLocatorNode{ obj, &status };
