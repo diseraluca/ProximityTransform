@@ -47,6 +47,8 @@ public:
 	static  MString     drawRegistrantId;
 
 	static MObject dummyInput;
+	static MObject proximityRadius;
+
 	static MObject isVisible;
 
 private:

@@ -21,6 +21,9 @@
     <ClInclude Include="ProximityLocatorDrawOverride.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProximityLocatorData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProximityLocator.cpp">

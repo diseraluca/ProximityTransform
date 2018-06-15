@@ -9,9 +9,11 @@
 // File : ProximityLocatorDrawOverride.cpp
 
 #include "ProximityLocatorDrawOverride.h"
+#include "ProximityLocatorData.h"
 
 #include <maya/MTimerMessage.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnDagNode.h>
 
 ProximityLocatorDrawOverride::ProximityLocatorDrawOverride(const MObject & obj)
 	:MHWRender::MPxDrawOverride(obj, NULL, false)
@@ -47,7 +49,39 @@ MHWRender::DrawAPI ProximityLocatorDrawOverride::supportedDrawAPIs() const
 
 MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPath, const MDagPath & cameraPath, const MHWRender::MFrameContext & frameContext, MUserData * oldData)
 {
-	return NULL;
+	ProximityLocatorData* data = dynamic_cast<ProximityLocatorData*>(oldData);
+	if (!data) {
+		data = new ProximityLocatorData;
+	}
+
+	MStatus status{};
+	MObject proximityLocatorNode{ objPath.node(&status) };
+	if (status) {
+		MPlug proximityLocatorProximityRadiusPlug{ proximityLocatorNode, ProximityLocator::proximityRadius };
+		data->radius = proximityLocatorProximityRadiusPlug.asDouble();
+	}
+	else {
+		data->radius = 1.0;
+	}
+
+	MFnDagNode proximityLocatorFn{ proximityLocatorNode, &status };
+	if (status) {
+		MTransformationMatrix proximityLocatorMatrix{ proximityLocatorFn.transformationMatrix() };
+		MPoint worldPosition{ proximityLocatorMatrix.getTranslation(MSpace::kWorld, &status) };
+		CHECK_MSTATUS(status);
+		data->worldPosition = worldPosition;
+
+		M3dView activeView{ M3dView::active3dView(&status) };
+		CHECK_MSTATUS(status);
+		
+		activeView.worldToView(worldPosition, data->position.x, data->position.y, &status);
+		CHECK_MSTATUS(status);
+	}
+	else {
+		data->position = D2Point();
+	}
+
+	return data;
 }
 
 bool ProximityLocatorDrawOverride::hasUIDrawables() const
@@ -57,11 +91,17 @@ bool ProximityLocatorDrawOverride::hasUIDrawables() const
 
 void ProximityLocatorDrawOverride::addUIDrawables(const MDagPath & objPath, MHWRender::MUIDrawManager & drawManager, const MHWRender::MFrameContext & frameContext, const MUserData * data)
 {
-	drawManager.beginDrawable();
+	ProximityLocatorData* proximityLocatorData = (ProximityLocatorData*)(data);
+	if (!proximityLocatorData) {
+		return;
+	}
 
-	drawManager.sphere(MPoint(0, 0, 0), 1, true);
+	drawManager.beginDrawInXray();
 
-	drawManager.endDrawable();
+	drawManager.sphere(proximityLocatorData->worldPosition, 0.5, false);
+	drawManager.circle2d(proximityLocatorData->position, proximityLocatorData->radius, false);
+
+	drawManager.endDrawInXray();
 }
 
 // ProximityLocatorDrawOverride::onDrawTimerCallback

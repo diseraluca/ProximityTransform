@@ -31,6 +31,8 @@ MString ProximityLocator::drawDbClassification{ "drawdb/geometry/ProximityLocato
 MString ProximityLocator::drawRegistrantId{ "ProximityLocatorPlugin" };
 
 MObject ProximityLocator::dummyInput;
+MObject ProximityLocator::proximityRadius;
+
 MObject ProximityLocator::isVisible;
 
 void * ProximityLocator::creator()
@@ -49,6 +51,10 @@ MStatus ProximityLocator::initialize()
 	CHECK_MSTATUS(nAttr.setWritable(false));
 	CHECK_MSTATUS(addAttribute(dummyInput));
 	
+	proximityRadius = nAttr.create("proximityRadius", "pxr", MFnNumericData::kDouble, 1.0, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	CHECK_MSTATUS(addAttribute(proximityRadius));
+
 	isVisible = nAttr.create("isVisible", "isv", MFnNumericData::kBoolean, true, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 	CHECK_MSTATUS(nAttr.setStorable(false));
@@ -73,28 +79,28 @@ void ProximityLocator::postConstructor()
 
 MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 {
-	// As of now the compute method is a proxy that
-	// inverts isVisible and nothing more.
-	//TODO-DO Add the real computation
-
 	if (plug != isVisible ) {
 		return MStatus::kUnknownParameter;
 	}
 
+	// The current view QtWidget we use to map
+	// the mouse coordinates to
+	M3dView activeView{ M3dView::active3dView() };
+	QWidget* activeViewWidget{ activeView.widget() };
+
 	// We use Qt to get the cursor position because maya  
 	// can't give it to us if we are not in an MContext
-	// Right now the tool works with global coordinates
-	// ( e.g the mouse cursor show control in range even
-	// if it is outside the viewport )
-	QPoint QcursorPosition{ QCursor::pos() };
-	MPoint cursorPosition{ double(QcursorPosition.x() / 1000), double(QcursorPosition.y() / 1000) };
+	QPoint QCursorPosition{ QCursor::pos() };
+	QCursorPosition = activeViewWidget->mapFromGlobal(QCursorPosition);
+	MPoint cursorPosition{ double(QCursorPosition.x()), double(QCursorPosition.y()) };
 
 	short proximityLocatorCoordinates[2];
 	CHECK_MSTATUS(dagObjectToViewCoordinates(thisMObject(), proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
-	MPoint proximityLocatorViewCoordinates{double(proximityLocatorCoordinates[0]/1000), double(proximityLocatorCoordinates[1]/1000)};
+	MPoint proximityLocatorViewCoordinates{double(proximityLocatorCoordinates[0]), double(proximityLocatorCoordinates[1])};
 
 	MVector cursorLocatorVector{ cursorPosition - proximityLocatorViewCoordinates };
-	bool result = (cursorLocatorVector.length() <= 0.1);
+	double proximityRadiusValue{ data.inputValue(proximityRadius).asDouble() };
+	bool result = (cursorLocatorVector.length() <= proximityRadiusValue);
 
 	// We access dummyInput to clean the dg 
 	bool dummyValue{ data.inputValue(dummyInput).asBool() };
