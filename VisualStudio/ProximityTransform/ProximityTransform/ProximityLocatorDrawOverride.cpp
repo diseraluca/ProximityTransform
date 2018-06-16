@@ -69,15 +69,14 @@ MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPat
 		MTransformationMatrix proximityLocatorTransformMatrix{ proximityLocatorTransformFn.transformationMatrix() };
 		MPoint worldPosition{ proximityLocatorTransformMatrix.getTranslation(MSpace::kWorld, &status) };
 		CHECK_MSTATUS(status);
-		data->worldPosition = worldPosition;
 
 		M3dView activeView{ M3dView::active3dView(&status) };
 		CHECK_MSTATUS(status);
-		
 		activeView.worldToView(worldPosition, data->position.x, data->position.y, &status);
 		CHECK_MSTATUS(status);
 	}
 	else {
+		data->worldPosition = MPoint();
 		data->position = D2Point();
 	}
 
@@ -97,10 +96,7 @@ void ProximityLocatorDrawOverride::addUIDrawables(const MDagPath & objPath, MHWR
 	}
 
 	drawManager.beginDrawInXray();
-
-	drawManager.sphere(proximityLocatorData->worldPosition, 0.5, false);
 	drawManager.circle2d(proximityLocatorData->position, proximityLocatorData->radius, false);
-
 	drawManager.endDrawInXray();
 }
 

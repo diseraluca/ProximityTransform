@@ -31,7 +31,6 @@ public:
 	ProximityLocatorData() :MUserData(false) {}
 	
 public:
-	MPoint worldPosition;
 	D2Point position;
 	double radius;
 };
