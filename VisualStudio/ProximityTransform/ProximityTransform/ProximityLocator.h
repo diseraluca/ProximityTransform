@@ -32,11 +32,12 @@ public:
 	virtual void postConstructor() override;
 	virtual MStatus compute(const MPlug& plug, MDataBlock& data) override;
 
+	static MObject  transformFromShape(const MObject& shapeNode);
+
 	~ProximityLocator();
 
 private:
 	static void onNodeAdded(MObject& node, void* clientData);
-	static MObject  transformFromShape(const MObject& shapeNode);
 
 	MStatus dagObjectToViewCoordinates(const MObject& dagNode, short &x_pos, short&y_pos) const;
 

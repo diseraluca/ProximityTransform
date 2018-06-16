@@ -64,10 +64,10 @@ MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPat
 		data->radius = 1.0;
 	}
 
-	MFnDagNode proximityLocatorFn{ proximityLocatorNode, &status };
+	MFnDagNode proximityLocatorTransformFn{ ProximityLocator::transformFromShape(proximityLocatorNode), &status };
 	if (status) {
-		MTransformationMatrix proximityLocatorMatrix{ proximityLocatorFn.transformationMatrix() };
-		MPoint worldPosition{ proximityLocatorMatrix.getTranslation(MSpace::kWorld, &status) };
+		MTransformationMatrix proximityLocatorTransformMatrix{ proximityLocatorTransformFn.transformationMatrix() };
+		MPoint worldPosition{ proximityLocatorTransformMatrix.getTranslation(MSpace::kWorld, &status) };
 		CHECK_MSTATUS(status);
 		data->worldPosition = worldPosition;
 
@@ -107,7 +107,7 @@ void ProximityLocatorDrawOverride::addUIDrawables(const MDagPath & objPath, MHWR
 // ProximityLocatorDrawOverride::onDrawTimerCallback
 //
 // This function gets called at fixed intervals by a timer callback.
-// When called onDrawTimerCallback access the dummyOutput attribute
+// When called onDrawTimerCallback access the dummyInput attribute
 // to force the ProximityLocator node instance to compute its isVisible output.
 // Then it dirties the DrawGeometry to launch the draw.
 void ProximityLocatorDrawOverride::onDrawTimerCallback(float elapsedTime, float lastTime, void * clientData)
