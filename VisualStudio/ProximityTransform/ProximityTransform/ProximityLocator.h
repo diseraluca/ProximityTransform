@@ -49,6 +49,7 @@ public:
 
 	static MObject dummyInput;
 	static MObject proximityRadius;
+	static MObject drawColor;
 
 	static MObject isVisible;
 

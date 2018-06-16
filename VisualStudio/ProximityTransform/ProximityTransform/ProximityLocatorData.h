@@ -33,4 +33,5 @@ public:
 public:
 	D2Point position;
 	double radius;
+	MColor drawColor;
 };

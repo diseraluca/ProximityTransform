@@ -14,6 +14,7 @@
 #include <maya/MTimerMessage.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnDagNode.h>
+#include <maya/MGlobal.h>
 
 ProximityLocatorDrawOverride::ProximityLocatorDrawOverride(const MObject & obj)
 	:MHWRender::MPxDrawOverride(obj, NULL, false)
@@ -79,6 +80,9 @@ MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPat
 		data->position = D2Point();
 	}
 
+	MPlug proximityLocatorDrawColorPlug{ proximityLocatorNode, ProximityLocator::drawColor };
+	data->drawColor = colorFromPlug(proximityLocatorDrawColorPlug);
+
 	return data;
 }
 
@@ -95,6 +99,7 @@ void ProximityLocatorDrawOverride::addUIDrawables(const MDagPath & objPath, MHWR
 	}
 
 	drawManager.beginDrawInXray();
+	drawManager.setColor(proximityLocatorData->drawColor);
 	drawManager.circle2d(proximityLocatorData->position, proximityLocatorData->radius, false);
 	drawManager.endDrawInXray();
 }
@@ -115,4 +120,23 @@ void ProximityLocatorDrawOverride::onDrawTimerCallback(float elapsedTime, float 
 
 		MHWRender::MRenderer::setGeometryDrawDirty(proximityLocatorDrawOverride->proximityLocator->thisMObject());
 	}
+}
+
+//ProximityLocatorDrawOverride::colorFromPlug
+//
+// Extracts an MColor for the given plug. If the plug is not a suitable color attribute
+// returns a default MColor
+MColor ProximityLocatorDrawOverride::colorFromPlug(const MPlug & colorPlug)
+{
+	if (!colorPlug.isCompound() || colorPlug.numChildren() != 3) {
+		MGlobal::displayWarning("The given plug is not a valid color plug");
+		return MColor{};
+	}
+
+	MColor resultColor{};
+	resultColor.r = colorPlug.child(0).asDouble();
+	resultColor.g = colorPlug.child(1).asDouble();
+	resultColor.b = colorPlug.child(2).asDouble();
+
+	return resultColor;
 }

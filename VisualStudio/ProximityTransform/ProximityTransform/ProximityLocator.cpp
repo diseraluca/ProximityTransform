@@ -32,6 +32,7 @@ MString ProximityLocator::drawRegistrantId{ "ProximityLocatorPlugin" };
 
 MObject ProximityLocator::dummyInput;
 MObject ProximityLocator::proximityRadius;
+MObject ProximityLocator::drawColor;
 
 MObject ProximityLocator::isVisible;
 
@@ -51,9 +52,16 @@ MStatus ProximityLocator::initialize()
 	CHECK_MSTATUS(nAttr.setWritable(false));
 	CHECK_MSTATUS(addAttribute(dummyInput));
 	
-	proximityRadius = nAttr.create("proximityRadius", "pxr", MFnNumericData::kDouble, 1.0, &status);
+	proximityRadius = nAttr.create("proximityRadius", "pxr", MFnNumericData::kDouble, 250.0, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 	CHECK_MSTATUS(addAttribute(proximityRadius));
+
+	drawColor = nAttr.createColor("drawColor", "drc", &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	CHECK_MSTATUS(nAttr.setKeyable(true));
+	CHECK_MSTATUS(nAttr.setUsedAsColor(true));
+	CHECK_MSTATUS(nAttr.setDefault(1.0, 1.0, 1.0));
+	CHECK_MSTATUS(addAttribute(drawColor));
 
 	isVisible = nAttr.create("isVisible", "isv", MFnNumericData::kBoolean, true, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);

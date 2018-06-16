@@ -37,6 +37,8 @@ public:
 private:
 	static void onDrawTimerCallback(float elapsedTime, float lastTime, void *clientData);
 
+	static MColor colorFromPlug(const MPlug& colorPlug);
+
 private:
 	ProximityLocator * proximityLocator;
 	MCallbackId drawTimerCbId;
