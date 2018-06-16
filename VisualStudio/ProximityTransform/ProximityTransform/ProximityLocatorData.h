@@ -31,6 +31,7 @@ public:
 	ProximityLocatorData() :MUserData(false) {}
 	
 public:
+	bool drawIt;
 	D2Point position;
 	double radius;
 	MColor drawColor;

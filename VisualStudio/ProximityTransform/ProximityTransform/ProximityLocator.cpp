@@ -31,6 +31,8 @@ MString ProximityLocator::drawDbClassification{ "drawdb/geometry/ProximityLocato
 MString ProximityLocator::drawRegistrantId{ "ProximityLocatorPlugin" };
 
 MObject ProximityLocator::dummyInput;
+MObject ProximityLocator::computeIt;
+MObject ProximityLocator::drawIt;
 MObject ProximityLocator::proximityRadius;
 MObject ProximityLocator::drawColor;
 
@@ -50,10 +52,22 @@ MStatus ProximityLocator::initialize()
 	dummyInput = nAttr.create("dummyInput", "dip", MFnNumericData::kBoolean, true, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 	CHECK_MSTATUS(nAttr.setWritable(false));
+	CHECK_MSTATUS(nAttr.setHidden(true));
 	CHECK_MSTATUS(addAttribute(dummyInput));
 	
+	computeIt = nAttr.create("computeIt", "cpi", MFnNumericData::kBoolean, false, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	CHECK_MSTATUS(nAttr.setKeyable(true));
+	CHECK_MSTATUS(addAttribute(computeIt));
+
+	drawIt = nAttr.create("drawIt", "dri", MFnNumericData::kBoolean, true, &status);
+	CHECK_MSTATUS_AND_RETURN_IT(status);
+	CHECK_MSTATUS(nAttr.setKeyable(true));
+	CHECK_MSTATUS(addAttribute(drawIt));
+
 	proximityRadius = nAttr.create("proximityRadius", "pxr", MFnNumericData::kDouble, 250.0, &status);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+	CHECK_MSTATUS(nAttr.setKeyable(true));
 	CHECK_MSTATUS(addAttribute(proximityRadius));
 
 	drawColor = nAttr.createColor("drawColor", "drc", &status);
@@ -70,6 +84,8 @@ MStatus ProximityLocator::initialize()
 	CHECK_MSTATUS(addAttribute(isVisible));
 
 	attributeAffects(dummyInput, isVisible);
+	attributeAffects(computeIt, isVisible);
+	attributeAffects(proximityRadius, isVisible);
 
 	return MStatus::kSuccess;
 }
@@ -91,32 +107,35 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 		return MStatus::kUnknownParameter;
 	}
 
-	// The current view QtWidget we use to map
-	// the mouse coordinates to
-	M3dView activeView{ M3dView::active3dView() };
-	QWidget* activeViewWidget{ activeView.widget() };
+	bool computeItValue{ data.inputValue(computeIt).asBool() };
+	if (computeItValue) {
+		// The current view QtWidget we use to map
+		// the mouse coordinates to
+		M3dView activeView{ M3dView::active3dView() };
+		QWidget* activeViewWidget{ activeView.widget() };
 
-	// We use Qt to get the cursor position because maya  
-	// can't give it to us if we are not in an MContext
-	QPoint QCursorPosition{ QCursor::pos() };
-	QCursorPosition = activeViewWidget->mapFromGlobal(QCursorPosition);
-	MPoint cursorPosition{ double(QCursorPosition.x()), double(QCursorPosition.y()) };
+		// We use Qt to get the cursor position because maya  
+		// can't give it to us if we are not in an MContext
+		QPoint QCursorPosition{ QCursor::pos() };
+		QCursorPosition = activeViewWidget->mapFromGlobal(QCursorPosition);
+		MPoint cursorPosition{ double(QCursorPosition.x()), double(QCursorPosition.y()) };
 
-	MObject proximityLocatorTransform{ transformFromShape(thisMObject()) };
+		MObject proximityLocatorTransform{ transformFromShape(thisMObject()) };
 
-	short proximityLocatorCoordinates[2];
-	CHECK_MSTATUS(dagObjectToViewCoordinates(proximityLocatorTransform, proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
-	MPoint proximityLocatorViewCoordinates{double(proximityLocatorCoordinates[0]), double(proximityLocatorCoordinates[1])};
+		short proximityLocatorCoordinates[2];
+		CHECK_MSTATUS(dagObjectToViewCoordinates(proximityLocatorTransform, proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
+		MPoint proximityLocatorViewCoordinates{ double(proximityLocatorCoordinates[0]), double(proximityLocatorCoordinates[1]) };
 
-	MVector cursorLocatorVector{ cursorPosition - proximityLocatorViewCoordinates };
-	double proximityRadiusValue{ data.inputValue(proximityRadius).asDouble() };
-	bool result = (cursorLocatorVector.length() <= proximityRadiusValue);
+		MVector cursorLocatorVector{ cursorPosition - proximityLocatorViewCoordinates };
+		double proximityRadiusValue{ data.inputValue(proximityRadius).asDouble() };
+		bool result = (cursorLocatorVector.length() <= proximityRadiusValue);
 
-	// We access dummyInput to clean the dg 
-	bool dummyValue{ data.inputValue(dummyInput).asBool() };
+		// We access dummyInput to clean the dg 
+		bool dummyValue{ data.inputValue(dummyInput).asBool() };
 
-	data.outputValue(isVisible).setBool(result);
-	data.outputValue(isVisible).setClean();
+		data.outputValue(isVisible).setBool(result);
+		data.outputValue(isVisible).setClean();
+	}
 
 	return MStatus::kSuccess;
 }

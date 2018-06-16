@@ -46,8 +46,10 @@ public:
 
 	static  MString     drawDbClassification;
 	static  MString     drawRegistrantId;
-
+	
 	static MObject dummyInput;
+	static MObject computeIt;
+	static MObject drawIt;
 	static MObject proximityRadius;
 	static MObject drawColor;
 

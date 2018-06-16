@@ -83,6 +83,9 @@ MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPat
 	MPlug proximityLocatorDrawColorPlug{ proximityLocatorNode, ProximityLocator::drawColor };
 	data->drawColor = colorFromPlug(proximityLocatorDrawColorPlug);
 
+	MPlug proximityLocatorDrawItPlug{ proximityLocatorNode, ProximityLocator::drawIt };
+	data->drawIt = proximityLocatorDrawItPlug.asBool();
+
 	return data;
 }
 
@@ -98,10 +101,12 @@ void ProximityLocatorDrawOverride::addUIDrawables(const MDagPath & objPath, MHWR
 		return;
 	}
 
-	drawManager.beginDrawInXray();
-	drawManager.setColor(proximityLocatorData->drawColor);
-	drawManager.circle2d(proximityLocatorData->position, proximityLocatorData->radius, false);
-	drawManager.endDrawInXray();
+	if (proximityLocatorData->drawIt) {
+		drawManager.beginDrawInXray();
+		drawManager.setColor(proximityLocatorData->drawColor);
+		drawManager.circle2d(proximityLocatorData->position, proximityLocatorData->radius, false);
+		drawManager.endDrawInXray();
+	}
 }
 
 // ProximityLocatorDrawOverride::onDrawTimerCallback
