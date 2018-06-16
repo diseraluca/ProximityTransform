@@ -76,7 +76,6 @@ MUserData * ProximityLocatorDrawOverride::prepareForDraw(const MDagPath & objPat
 		CHECK_MSTATUS(status);
 	}
 	else {
-		data->worldPosition = MPoint();
 		data->position = D2Point();
 	}
 

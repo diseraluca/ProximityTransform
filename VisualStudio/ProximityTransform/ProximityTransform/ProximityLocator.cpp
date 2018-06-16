@@ -94,8 +94,10 @@ MStatus ProximityLocator::compute(const MPlug & plug, MDataBlock & data)
 	QCursorPosition = activeViewWidget->mapFromGlobal(QCursorPosition);
 	MPoint cursorPosition{ double(QCursorPosition.x()), double(QCursorPosition.y()) };
 
+	MObject proximityLocatorTransform{ transformFromShape(thisMObject()) };
+
 	short proximityLocatorCoordinates[2];
-	CHECK_MSTATUS(dagObjectToViewCoordinates(thisMObject(), proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
+	CHECK_MSTATUS(dagObjectToViewCoordinates(proximityLocatorTransform, proximityLocatorCoordinates[0], proximityLocatorCoordinates[1]));
 	MPoint proximityLocatorViewCoordinates{double(proximityLocatorCoordinates[0]), double(proximityLocatorCoordinates[1])};
 
 	MVector cursorLocatorVector{ cursorPosition - proximityLocatorViewCoordinates };
